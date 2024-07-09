@@ -7,6 +7,8 @@ class Settings(BaseSettings):
     db_password: str
     db_name: str
     db_username: str
+    api_key: str
+    openai_key: str
 
     class Config:
         env_file = ".env"

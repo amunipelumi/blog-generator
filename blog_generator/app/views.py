@@ -3,36 +3,11 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
-from django.conf import settings
+from django.urls import reverse
 from json import loads, JSONDecodeError
-from pytube import YouTube
-
-import assemblyai as aai
-import os
+from .blog_gen import BlogGen
 
 
-# getting title and audio from youtube
-class YT:
-    def __init__(self, link):
-        self.yt = YouTube(link)
-
-    def title(self):
-        return self.yt.title
-    
-    def download(self):
-        file = self.yt.streams.filter(only_audio=True).first()
-        file = file.download(settings.MEDIA_ROOT)
-        name, ext = os.path.splitext(file)
-        audio = name + '.mp3'
-        os.rename(file, audio)
-        return audio
-
-
-# get video transcript
-def get_transcript(link):
-    yt = YT(link)
-    audio_file = yt.download()
-    pass
 
 # blog generator view
 def generate_blog(request):
@@ -40,22 +15,34 @@ def generate_blog(request):
         try:
             data = loads(request.body)
             link = data['link']
-            # return JsonResponse({'content': link})
         
         except (KeyError, JSONDecodeError):
-            return JsonResponse({'error': 'Invalid data!!!'}, status=400)
+            return JsonResponse({'error': 'Invalid data..'}, status=400)
 
-        yt = YT(link)
-        title = yt.title()
+        bg = BlogGen(link)
+        title = bg.title()
+        transcript = bg.get_transcript()
+
+        if transcript == None:
+            return JsonResponse({'error': 'Unable to get transcript..'}, status=500)
         
-
-    else:
-        return JsonResponse({'error': 'Invalid request method!!!'}, status=405)
+        blog_article = bg.blog_from_ai(transcript)
+        if blog_article:
+            return JsonResponse({'title': title, 'article': blog_article})
+        
+        return JsonResponse({'error': 'Error occured while generating blog..'}, status=500)
+        
+    return JsonResponse({'error': 'Invalid request method..'}, status=405)
 
 # home view
 @login_required(login_url='login_')
 def homepage(request):
-    return render(request, 'app/index.html')
+    g_url = reverse('blog_gen_')
+    context = {
+        'csrf_token': request.COOKIES.get('csrftoken'),
+        'g_url': g_url,
+    }
+    return render(request, 'app/index.html', context)
 
 # signup view
 def user_signup(request):
@@ -114,3 +101,7 @@ def blog_details(request):
 def user_logout(request):
     logout(request)
     return redirect('login_')
+
+
+# https://www.youtube.com/shorts/DIfZ94D796I
+# https://www.youtube.com/watch?v=IZsQqarWXtY
