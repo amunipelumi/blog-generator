@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // console.log('url: ' + endpointUrl);
     // console.log('csrf token: ' + csrftoken);
     document.getElementById('generateBlogButton').addEventListener('click', async () => {
-        console.log('Generate button clicked');
+        // console.log('Generate button clicked');
         const youtubeLink = document.getElementById('youtubeLink').value;
         const blogContent = document.getElementById('blogContent');
 
@@ -23,11 +23,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify({ link: youtubeLink }),
                 });
 
-                console.log('Fetch response:', response);
+                // console.log('Fetch response:', response);
 
                 if (response.ok) {
                     const data = await response.json();
-                    console.log('Fetch data:', data);
+                    // console.log('Fetch data:', data);
                     blogContent.innerHTML = data.article;
                 } else {
                     console.error('Error response:', response.statusText);

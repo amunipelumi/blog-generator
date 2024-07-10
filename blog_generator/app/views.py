@@ -22,10 +22,10 @@ def generate_blog(request):
         bg = BlogGen(link)
         title = bg.title()
         transcript = bg.get_transcript()
-
         if transcript == None:
             return JsonResponse({'error': 'Unable to get transcript..'}, status=500)
-        
+        return JsonResponse({'title': title, 'article': transcript})
+    
         blog_article = bg.blog_from_ai(transcript)
         if blog_article:
             return JsonResponse({'title': title, 'article': blog_article})
@@ -105,3 +105,4 @@ def user_logout(request):
 
 # https://www.youtube.com/shorts/DIfZ94D796I
 # https://www.youtube.com/watch?v=IZsQqarWXtY
+# https://www.youtube.com/watch?v=VmNhDUKMHd4
