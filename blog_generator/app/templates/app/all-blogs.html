@@ -1,3 +1,5 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,8 +18,8 @@
         </div>
         <div>
             <a href="#" class="text-white hover:underline mx-4">Welcome {{ user.username }}</a>
-            <a href="/blog-list" class="text-white hover:underline mx-4">Saved Blog Posts</a>
-            <a href="#" class="text-white hover:underline">Logout</a>
+            <a href="{% url 'all_blogs_' %}" class="text-white hover:underline mx-4">Saved Blog Posts</a>
+            <a href="{% url 'logout_' %}" class="text-white hover:underline">Logout</a>
         </div>
     </nav>
 
@@ -30,11 +32,11 @@
                 <h2 class="text-xl mb-4 font-semibold">All Blog Posts</h2>
                 <div class="space-y-4">
                     
-                    {% for article in blog_articles reversed %}
-                    <a href="blog-details/{{article.id}}">
+                    {% for article in articles reversed %}
+                    <a href="{% url 'blog_details_' article.id %}">
                         <div class="border border-gray-300 p-4 rounded-lg">
                             <h3 class="text-lg font-semibold">{{article.youtube_title}}</h3>
-                            <p>{{article.generated_content|truncatechars:80}}</p>
+                            <p>{{article.blog_article|truncatechars:80}}</p>
                         </div>
                     </a>
                     {% endfor %}

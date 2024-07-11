@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from django.urls import reverse
 from json import loads, JSONDecodeError
 from .blog_gen import BlogGen
+from .models import BlogModel
 
 
 
@@ -24,10 +25,16 @@ def generate_blog(request):
         transcript = bg.get_transcript()
         if transcript == None:
             return JsonResponse({'error': 'Unable to get transcript..'}, status=500)
-        return JsonResponse({'title': title, 'article': transcript})
-    
+        
         blog_article = bg.blog_from_ai(transcript)
         if blog_article:
+            new_blog = BlogModel.objects.create(
+                user = request.user,
+                youtube_title = title,
+                youtube_link = link,
+                blog_article = blog_article
+            )
+            new_blog.save()
             return JsonResponse({'title': title, 'article': blog_article})
         
         return JsonResponse({'error': 'Error occured while generating blog..'}, status=500)
@@ -89,13 +96,19 @@ def user_login(request):
 
     return render(request, 'app/login.html')
 
-
+# all blogs page view
+@login_required(login_url='login_')
 def all_blogs(request):
-    pass
+    articles = BlogModel.objects.filter(user=request.user)
+    context = {'articles': articles}
+    return render(request, 'app/all-blogs.html', context)
 
-
-def blog_details(request):
-    pass
+# details of blog view
+@login_required(login_url='login_')
+def blog_details(request, pk):
+    an_article = BlogModel.objects.get(user=request.user, id=pk)
+    context = {'an_article': an_article}
+    return render(request, 'app/blog-details.html', context)
 
 # logout view
 def user_logout(request):
@@ -103,6 +116,6 @@ def user_logout(request):
     return redirect('login_')
 
 
-# https://www.youtube.com/shorts/DIfZ94D796I
+
 # https://www.youtube.com/watch?v=IZsQqarWXtY
 # https://www.youtube.com/watch?v=VmNhDUKMHd4

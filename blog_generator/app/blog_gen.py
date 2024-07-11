@@ -18,11 +18,14 @@ class BlogGen:
         return self.yt.title
     
     def download(self):
-        file = self.yt.streams.filter(only_audio=True).first()
-        file = file.download(st.MEDIA_ROOT)
-        name, ext = os.path.splitext(file)
-        audio = name + '.mp3'
-        os.rename(file, audio)
+        try:
+            file = self.yt.streams.filter(only_audio=True).first()
+            file = file.download(st.MEDIA_ROOT)
+            name, ext = os.path.splitext(file)
+            audio = name + '.mp3'
+            os.rename(file, audio)
+        except FileExistsError:
+             pass
         return audio
 
     def get_transcript(self):
@@ -39,31 +42,25 @@ class BlogGen:
     
     # generating blog through ai
     def blog_from_ai(self, text):
-        prompt = f"Based on the following transcript from a YouTube video, write a comprehensive blog article, write it based on the transcript, but dont make it look like a youtube video, make it look like a proper blog article:\n\n{text}"
+        prompt = f"Based on the following transcript from a YouTube video, write a comprehensive blog article, write it based on the transcript, but dont make it look like a youtube video, make it look like a proper blog article and do not include a title, just the the body:\n\n{text}"
     
         response = self.client.chat.completions.create(
             model="llama3-70b-8192",
             messages=[
-                {
-                    "role": "system",
-                    "content": "JSON"
-                },
+                # {
+                #     "role": "system",
+                #     "content": "JSON"
+                # },
                 {
                     "role": "user",
                     "content": prompt
                 }
             ],
             temperature=1,
-            max_tokens=100,
-            top_p=1,
-            stream=False,
-            response_format={"type": "json_object"},
-            stop=None,
+            max_tokens=1000,
         )
 
-        
-        article = response.choices[0].message
-        print(type(article))
-        print(article)
-        # return article
+        article = response.choices[0].message.content
+        # print(type(article))
+        return article
  
